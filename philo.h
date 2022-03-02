@@ -6,7 +6,7 @@
 /*   By: mpons <mpons@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/28 14:06:38 by mpons             #+#    #+#             */
-/*   Updated: 2022/03/01 16:31:48 by mpons            ###   ########.fr       */
+/*   Updated: 2022/03/02 20:38:28 by mpons            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@
 # include <sys/time.h>
 # include <pthread.h>
 
-//terminal colors
+# define MAX_INT 2147483647
+
+// terminal colors
 # define RED "\033[0;31m"
 # define GREEN "\033[0;32m"
 # define YELLOW "\033[0;33m"
@@ -29,45 +31,83 @@
 # define CYAN "\033[0;36m"
 # define DEFAULT "\033[0m"
 
-//TIME
+// utils
+int		ft_check_and_atoi(const char *str);
+void	ft_putstr_fd(char *s, int fd);
+void	ft_putendl_fd(char *s, int fd);
+void	err_m(char *e);
+
+// ARGS
+typedef struct s_av
+{
+	int				q_philos;
+	unsigned int	time_to_die;
+	unsigned int	time_to_eat;
+	unsigned int	time_to_sleep;
+	unsigned int	q_meals;
+}	t_av;
+
+// TIME
 typedef struct s_time
 {
 	long int		tv_sec;
 	int				tv_usec;
-	unsigned int	timestamp_in_ms;
-	unsigned int	prog_start;
+	unsigned int	in_ms;
+	unsigned int	ref;
 }	t_time;
 
+// philo avec son fork
+typedef struct s_philo
+{
+	int	id;
+	int status;//if status = what he's doing.
+	int last_meal;
+	int	meals;
+	int fork; //true is available to use , 
+	pthread_mutex_t mutex;
+	// int	taken_forks;
+}	t_philo;
+
+// philo status
+# define DEAD 0
+# define THINKING 1
+# define EATING 2
+# define SLEEPING 3
+
+typedef	struct s_table
+{
+	t_philo *philos;
+	t_time	time;
+	int		n_ph;
+}	t_table;
+
+unsigned int	get_time(t_time *time);
+#endif
+
+// 	pthread_mutex_t mutex;
+// 	int	forkId;
+// 	int status;//if status = true is availeble to use , 
+// }	t_fork;
+// void		smart_sleep(long long time, t_rules *rules)
+// {
+// 	long long i;
+
+// 	i = timestamp();
+// 	while (!(rules->dieded))
+// 	{
+// 		if (time_diff(i, timestamp()) >= time)
+// 			break ;
+// 		usleep(50);
+// 	}
+// }
+
+/*
 typedef struct s_mail
 {
 	pthread_mutex_t mutex;
 	int mail;
 }	t_mail;
-
-
-typedef struct s_philo
-{
-	pthread_mutex_t mutex;
-	int	philoId;
-	int	fork_left;
-	int	fork_right;
-	int status;//if status = true is available to use , 
-/*
-0	dead
-1	thinking
-2	eating
-3	sleeping
 */
-}	t_philo;
-
-typedef struct s_fork
-{
-	pthread_mutex_t mutex;
-	int	forkId;
-	int status;//if status = true is availeble to use , 
-}	t_fork;
-void	get_time_in_ms(t_time *time);
-#endif
 /*
 int	gettimeofday(struct timeval *restrict tp, void *restrict tzp);
 
