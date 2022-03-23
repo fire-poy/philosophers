@@ -6,105 +6,98 @@
 /*   By: mpons <mpons@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/28 14:57:06 by mpons             #+#    #+#             */
-/*   Updated: 2022/03/02 20:39:15 by mpons            ###   ########.fr       */
+/*   Updated: 2022/03/18 15:33:06 by mpons            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-// 1 number_of_philosophers 
-// 2 time_to_die 
-// 3 time_to_eat 
-// 4 time_to_sleep 
-// 5 [number_of_times_each_philosopher_must_eat]
-
-// tv = time_value
-unsigned int	get_time(t_time *t)
+int	usage(void)
 {
-	gettimeofday((struct timeval *) t, NULL);
-	if (t->ref == 0)
-		t->ref = (t->in_ms = t->tv_sec * 1000 + t->tv_usec / 1000); 	
-	t->in_ms = (t->tv_sec * 1000 + t->tv_usec / 1000) - t->ref; 	
-	return (t->in_ms);
+	char	*m1;
+	char	*m2;
+
+	m1 = "args: number_of_philosophers time_to_die time_to_eat";
+	m2 = "time_to_sleep [number_of_times_each_philosopher_must_eat]";
+	ft_putstr_fd(RED, 2);
+	ft_putstr_fd(m1, 2);
+	ft_putendl_fd(m2, 2);
+	ft_putstr_fd("number_of_times_each_philosopher_must_eat is ", 2);
+	ft_putstr_fd(GREEN, 2);
+	ft_putstr_fd("optional\n", 2);
+	return (-1);
 }
 
-// - [] run program
-// - [] philo seul, philos pair, philos impair
-// - [] if death => stop ,free , return.
-
-void	print_status(t_philo *philo, t_time *t)
+int	get_args(int ac, char **av, t_table *tab)
 {
-	if (philo->status == 0)
-		printf("%d %s philo %d is dead\n", get_time(t), RED, philo->id);
-	if (philo->status == 1)
-		printf("%d %s philo %d is thinking\n", get_time(t), CYAN, philo->id);
-	if (philo->status == 2)
-		printf("%d %s philo %d is eating\n", get_time(t), YELLOW, philo->id);
-	if (philo->status == 3)
-		printf("%d %s philo %d is sleeping\n", get_time(t), MAGENTA, philo->id);
+	tab->q_philos = ft_check_and_atoi(av[1]);
+	if (tab->q_philos == -1)
+		return (-1);
+	tab->time_to_die = ft_check_and_atoi(av[2]);
+	if (tab->time_to_die == -1)
+		return (-1);
+	tab->time_to_eat = ft_check_and_atoi(av[3]);
+	if (tab->time_to_eat == -1)
+		return (-1);
+	tab->time_to_sleep = ft_check_and_atoi(av[4]);
+	if (tab->time_to_sleep == -1)
+		return (-1);
+	if (ac == 6)
+		tab->q_meals = ft_check_and_atoi(av[5]);
+	else
+		tab->q_meals = -2;
+	printf("coco");
+	if (tab->q_meals == -1)
+		return (-1);
+	else
+		return (1);
 }
 
-t_philo *create_philos(int n, t_time *time)
+t_philo	*create_philos(t_table *tab)
 {
-	t_philo *philos;
+	t_philo	*philos;
 	int		i;
-	
-	philos = malloc(n * sizeof(t_philo));
+
+	philos = malloc(tab->q_philos * sizeof(t_philo));
 	i = -1;
-	while (++i < n)
+	while (++i < tab->q_philos)
 	{
 		philos[i].id = i + 1;
-		pthread_mutex_init (&philos[i].mutex, NULL); 
-		philos[i].last_meal = get_time(time);
+		if (i == tab->q_philos - 1)
+			philos[i].next = 0;
+		else
+			philos[i].next = i + 1;
+		philos[i].last_meal = 0;
 		philos[i].meals = 0;
-		philos[i].status = THINKING;
-		print_status(&philos[i], time);
-	} 	
+		philos[i].wait = 0;
+		philos[i].tab = tab;
+		philos[i].t_ref = &tab->t_ref;
+		pthread_mutex_init (&philos[i].fork, NULL);
+		printf("%d %d is thinking\n", 0, philos[i].id);
+	}
+	pthread_mutex_init(&tab->stylo, NULL);
+	pthread_mutex_init(&tab->crayon, NULL);
 	return (philos);
 }
-void	get_args(int ac, char **av, t_av *args)
-{
-		args->q_philos = ft_check_and_atoi(av[1]);
-		args->time_to_die = ft_check_and_atoi(av[2]);
-		args->time_to_eat = ft_check_and_atoi(av[3]);
-		args->time_to_sleep = ft_check_and_atoi(av[4]);
-		if (ac == 6)
-			args->q_meals = ft_check_and_atoi(av[5]);
-		else
-			args->q_meals = 0;		
-}
 
-void	philosophate(t_philo philos, t_time *t);
+int	main(int ac, char **av)
 {
-	if philos
+	t_table	table;
 
-	
-}
-
-int main(int ac, char** av)
-{
-	t_av	args;
-	t_table table;
-	
 	if (ac == 5 || ac == 6)
-		get_args(ac, av, &args);
-	else 
-		err_m("usage");
-	table.time.ref = 0;
+	{
+		if (get_args(ac, av, &table) == -1)
+			return (-1);
+	}
+	else
+	{
+		usage();
+		return (1);
+	}
+	table.t_ref = 0;
+	table.death = 0;
 	printf("%sLa vie est belle, n'est pas?\n", GREEN);
-	table.philos = create_philos(args.q_philos, &table.time);
+	table.philos = create_philos(&table);
 	philosophate(&table);
-	return (0); 
+	return (0);
 }
-	// get_time(&t);
-
-// -----------------------------------
-
-	// while (t.in_ms < 10000)
-	// {
-	// 	get_time(&t);
-	// 	printf("%s is thinking\n now %d\n", MAGENTA, t.in_ms);
-	// 	usleep(1000000);
-	// 	get_time(&t);
-	// 	printf("%s is thinking\n now %d\n",  BLUE , t.in_ms);
-	// }
